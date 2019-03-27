@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # fail fast
-set -eu
+set -e
 
 # parse args
 BUILD_DIR=$1
