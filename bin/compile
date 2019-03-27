@@ -84,7 +84,7 @@ create_profile_scripts() {
 
   mkdir -p $home/.profile.d
 
-  echo "-----> Configuring"
+  echo "-----> Configuring AdoptOpenJDK"
   curl -o $home/.profile.d/adoptopenjdk.sh -sL "$url/opt/jvmcommon.sh"
   curl -o $home/.profile.d/jdbc.sh -sL "$url/opt/jdbc.sh"
   echo "       - done"
