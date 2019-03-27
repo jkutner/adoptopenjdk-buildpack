@@ -13,14 +13,21 @@ $ heroku buildpacks:add heroku/java
 
 ## Customizing
 
-You can customize the version of AdoptOpenJDK by setting the `ADOPTOPENJDK_URL` and `ADOPTOPENJDK_CHECKSUM` config variables thusly:
+You can customize the version of AdoptOpenJDK by setting the following config vars:
+
+* `ADOPTOPENJDK_VERSION` (default: 8)
+* `ADOPTOPENJDK_IMPL` (default: hotspot)
+* `ADOPTOPENJDK_RELEASE` (default: latest)
+* `ADOPTOPENJDK_CHECKSUM` (no default)
+
+Alternatively, you can codify these in your app by creating a `system.properties` file with contents like this:
 
 ```
-$ heroku config:set ADOPTOPENJDK_URL="https://github.com/AdoptOpenJDK/openjdk11-binaries/releases/download/jdk-11.0.2%2B9/OpenJDK11U-jdk_x64_linux_hotspot_11.0.2_9.tar.gz"
-$ heroku config:set ADOPTOPENJDK_CHECKSUM="d02089d834f7702ac1a9776d8d0d13ee174d0656cf036c6b68b9ffb71a6f610e"
+adoptopenjdk.version=8
+adoptopenjdk.impl=hotspot
+adoptopenjdk.release=latest
 ```
-
-The URLs and checksums can be obtained from the [AdoptOpenJDK archive](https://adoptopenjdk.net/archive.html).
+For more information on acceptable values, see the [AdoptOpenJDK API docs](https://api.adoptopenjdk.net/).
 
 ## License
 
