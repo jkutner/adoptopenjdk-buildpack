@@ -19,9 +19,9 @@ get_property() {
 
   if [ -f ${propFile} ]; then
     local propValue=$(sed '/^\#/d' ${propFile} | grep "${propName}"  | tail -n 1 | cut -d "=" -f2- | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
-    echo "${propValue:-$propDefault}"
+    echo "a ${propValue:-$propDefault}"
   else
-    echo "${propDefault}"
+    echo "b ${propDefault}"
   fi
 }
 
@@ -42,13 +42,13 @@ install_adoptopenjdk() {
   local version="${ADOPTOPENJDK_VERSION:-$(get_property "adoptopenjdk.version" "8")}"
   local impl="${ADOPTOPENJDK_IMPL:-$(get_property "adoptopenjdk.impl" "hotspot")}"
   local release="${ADOPTOPENJDK_RELEASE:-$(get_property "adoptopenjdk.release" "latest")}"
-  local checksum="${ADOPTOPENJDK_CHECKSUM:-$(get_property "adoptopenjdk.checksum" "")}"
+  local checksum="${ADOPTOPENJDK_CHECKSUM:-$(get_property "adoptopenjdk.checksum")}"
 
   local url="$(create_adoptopenjdk_url "$version" "$impl" "$release")"
 
   if [ -n "$checksum" ]; then
     local jdk_downloaded_file="/tmp/jdk.tgz"
-    echo "-----> Downloading AdoptOpenJDK (${version}, ${impl}, ${release})"
+    echo "-----> Downloading AdoptOpenJDK ${version} (${impl}, ${release})"
     curl --retry 3 -o "$jdk_downloaded_file" -sL "$url"
     echo "       - done"
 
@@ -63,7 +63,7 @@ install_adoptopenjdk() {
     fi
     echo "       - done"
 
-    echo "-----> Installing AdoptOpenJDK (${version}, ${impl}, ${release})"
+    echo "-----> Installing AdoptOpenJDK ${version} (${impl}, ${release})"
     tar xzmf "$jdk_downloaded_file" -C "$jdk_dir" --strip-components=1
     echo "       - done"
   else
