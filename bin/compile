@@ -104,6 +104,8 @@ OPT_DIR=$BP_DIR/../opt/
 JDK_DIR="$BUILD_DIR/.jdk"
 JVM_COMMON_URL="https://raw.githubusercontent.com/heroku/heroku-buildpack-jvm-common/master/"
 
+cd $BUILD_DIR
+
 install_adoptopenjdk "$JDK_DIR"
 create_profile_scripts "$BUILD_DIR" "$JVM_COMMON_URL"
 create_export_script "$JDK_DIR" "$(pwd)"
