@@ -3,33 +3,75 @@
 # fail fast
 set -eu
 
+# parse args
+BUILD_DIR=$1
+CACHE_DIR=$2
+ENV_DIR=$3
+
+source <(curl --retry 3 -fsSL "https://lang-common.s3.amazonaws.com/buildpack-stdlib/v8/stdlib.sh")
+
+export_env $ENV_DIR "."
+
+get_property() {
+  local propFile="system.properties"
+  local propName="${1:?}"
+  local propDefault="${2:-""}"
+
+  if [ -f ${propFile} ]; then
+    local propValue=$(sed '/^\#/d' ${propFile} | grep "${propName}"  | tail -n 1 | cut -d "=" -f2- | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
+    echo "${propValue:-$propDefault}"
+  else
+    echo "${propDefault}"
+  fi
+}
+
+create_adoptopenjdk_url() {
+  local version="${1:-8}"
+  local impl="${2:-hotspot}"
+  local release="${3:-latest}"
+  echo "https://api.adoptopenjdk.net/v2/binary/nightly/openjdk${version}?openjdk_impl=${impl}&os=linux&arch=x64&release=${release}&type=jdk"
+}
+
 install_adoptopenjdk() {
   local jdk_dir=${1:?}
   local url=${2:?}
-  local checksum=${3:?}
-  local jdk_downloaded_file="/tmp/jdk.tgz"
 
   rm -rf $jdk_dir # clobber any previously installed jdk
   mkdir -p $jdk_dir
 
-  echo "-----> Downloading AdoptOpenJDK"
-  curl --retry 3 -o "$jdk_downloaded_file" -sL "$url"
-  echo "       - done"
+  # parse version
+  local version="${ADOPTOPENJDK_VERSION:-$(get_property "adoptopenjdk.version" "8")}"
+  local impl="${ADOPTOPENJDK_IMPL:-$(get_property "adoptopenjdk.impl" "hotspot")}"
+  local release="${ADOPTOPENJDK_RELEASE:-$(get_property "adoptopenjdk.release" "latest")}"
+  local checksum="${ADOPTOPENJDK_CHECKSUM:-$(get_property "adoptopenjdk.checksum" "")}"
 
-  echo -n "-----> Verifying checksum... "
-  actual_sha_256="$(shasum -a 256 ${jdk_downloaded_file} | awk '{ print $1 }')"
-  if [ "$actual_sha_256" != "$checksum" ]; then
-    echo "failed"
-    echo "Invalid checksum!"
-    echo "Expected => $checksum"
-    echo "Found    => $actual_sha_256"
-    exit 1
+  local url="$(create_adoptopenjdk_url "$version" "$impl" "$release")"
+
+  if [ -n "$checksum" ]; then
+    local jdk_downloaded_file="/tmp/jdk.tgz"
+    echo "-----> Downloading AdoptOpenJDK (${version}, ${impl}, ${release})"
+    curl --retry 3 -o "$jdk_downloaded_file" -sL "$url"
+    echo "       - done"
+
+    echo -n "-----> Verifying checksum ($checksum)"
+    actual_sha_256="$(shasum -a 256 ${jdk_downloaded_file} | awk '{ print $1 }')"
+    if [ "$actual_sha_256" != "$checksum" ]; then
+      echo "failed"
+      echo "Invalid checksum!"
+      echo "Expected => $checksum"
+      echo "Found    => $actual_sha_256"
+      exit 1
+    fi
+    echo "       - done"
+
+    echo "-----> Installing AdoptOpenJDK (${version}, ${impl}, ${release})"
+    tar xzmf "$jdk_downloaded_file" -C "$jdk_dir" --strip-components=1
+    echo "       - done"
+  else
+    echo "-----> Installing AdoptOpenJDK (${version}, ${impl}, ${release})"
+    curl --retry 3 -sL "$url" | tar xzm -C "$jdk_dir" --strip-components=1
+    echo "       - done"
   fi
-  echo "       - done"
-
-  echo "-----> Installing AdoptOpenJDK"
-  tar xzmf "$jdk_downloaded_file" -C "$jdk_dir" --strip-components=1
-  echo "       - done"
 }
 
 create_profile_scripts() {
@@ -57,18 +99,12 @@ EOF
   fi
 }
 
-# parse args
-BUILD_DIR=$1
-CACHE_DIR=$2
-
 BP_DIR="$(cd "$(dirname "$0")" && pwd)"
 OPT_DIR=$BP_DIR/../opt/
 
 JDK_DIR="$BUILD_DIR/.jdk"
-ADOPTOPENJDK_URL="${ADOPTOPENJDK_URL:-https://github.com/AdoptOpenJDK/openjdk8-binaries/releases/download/jdk8u202-b08/OpenJDK8U-jdk_x64_linux_hotspot_8u202b08.tar.gz}"
-ADOPTOPENJDK_CHECKSUM="${ADOPTOPENJDK_CHECKSUM:-f5a1c9836beb3ca933ec3b1d39568ecbb68bd7e7ca6a9989a21ff16a74d910ab}"
 JVM_COMMON_URL="https://raw.githubusercontent.com/heroku/heroku-buildpack-jvm-common/master/"
 
-install_adoptopenjdk "$JDK_DIR" "$ADOPTOPENJDK_URL" "$ADOPTOPENJDK_CHECKSUM"
+install_adoptopenjdk "$JDK_DIR"
 create_profile_scripts "$BUILD_DIR" "$JVM_COMMON_URL"
 create_export_script "$JDK_DIR" "$(pwd)"
