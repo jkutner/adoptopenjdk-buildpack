@@ -4,16 +4,16 @@
 set -e
 
 # parse args
-BUILD_DIR=$1
-CACHE_DIR=$2
-ENV_DIR=$3
+export BUILD_DIR=$1
+export CACHE_DIR=$2
+export ENV_DIR=$3
 
 source <(curl --retry 3 -fsSL "https://lang-common.s3.amazonaws.com/buildpack-stdlib/v8/stdlib.sh")
 
 export_env $ENV_DIR "."
 
 get_property() {
-  local propFile="system.properties"
+  local propFile="$BUILD_DIR/system.properties"
   local propName="${1:?}"
   local propDefault="${2:-""}"
 
@@ -102,8 +102,6 @@ OPT_DIR=$BP_DIR/../opt/
 
 JDK_DIR="$BUILD_DIR/.jdk"
 JVM_COMMON_URL="https://raw.githubusercontent.com/heroku/heroku-buildpack-jvm-common/master/"
-
-cd $BUILD_DIR
 
 install_adoptopenjdk "$JDK_DIR"
 create_profile_scripts "$BUILD_DIR" "$JVM_COMMON_URL"
