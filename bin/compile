@@ -70,11 +70,11 @@ install_adoptopenjdk() {
   fi
 
   echo "       - pruning"
-    rm -rf "${jdk_dir}/demo"
-    rm -rf "${jdk_dir}/src.zip"
-    rm -rf "${jdk_dir}/sample"
-    rm -rf "${jdk_dir}/man"
-    rm -rf "${jdk_dir}/sample"
+  rm -rf "${jdk_dir}/demo"
+  rm -rf "${jdk_dir}/src.zip"
+  rm -rf "${jdk_dir}/sample"
+  rm -rf "${jdk_dir}/man"
+  rm -rf "${jdk_dir}/sample"
   echo "       - done"
 }
 
