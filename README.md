@@ -1,6 +1,6 @@
 # AdoptOpenJDK Buildpack
 
-This [buildpack](https://devcenter.heroku.com/articles/buildpacks) will install the [AdoptOpenJDK](https://adoptopenjdk.net/) Community Edition.
+This [buildpack](https://devcenter.heroku.com/articles/buildpacks) will install the [AdoptOpenJDK](https://adoptopenjdk.net/) runtimes.
 
 ## Usage
 
