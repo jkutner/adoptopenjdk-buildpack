@@ -6,7 +6,7 @@ set -eu
 install_adoptopenjdk() {
   local jdk_dir=${1:?}
   local url=${2:?}
-  local checksum=${2:?}
+  local checksum=${3:?}
   local jdk_downloaded_file="/tmp/jdk.tgz"
 
   rm -rf $jdk_dir # clobber any previously installed jdk
