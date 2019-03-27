@@ -34,7 +34,6 @@ create_adoptopenjdk_url() {
 
 install_adoptopenjdk() {
   local jdk_dir=${1:?}
-  local url=${2:?}
 
   rm -rf $jdk_dir # clobber any previously installed jdk
   mkdir -p $jdk_dir
