@@ -46,13 +46,14 @@ install_adoptopenjdk() {
 
   local url="$(create_adoptopenjdk_url "$version" "$impl" "$release")"
 
+
+  echo "-----> Installing AdoptOpenJDK ${version} (${impl}, ${release})"
   if [ -n "$checksum" ]; then
     local jdk_downloaded_file="/tmp/jdk.tgz"
-    echo "-----> Downloading AdoptOpenJDK ${version} (${impl}, ${release})"
+    echo "       - downloading"
     curl --retry 3 -o "$jdk_downloaded_file" -sL "$url"
-    echo "       - done"
 
-    echo "-----> Verifying checksum ($checksum)"
+    echo "       - verifying checksum ($checksum)"
     actual_sha_256="$(shasum -a 256 ${jdk_downloaded_file} | awk '{ print $1 }')"
     if [ "$actual_sha_256" != "$checksum" ]; then
       echo "Invalid checksum!"
@@ -60,16 +61,21 @@ install_adoptopenjdk() {
       echo "Found    => $actual_sha_256"
       exit 1
     fi
-    echo "       - done"
 
-    echo "-----> Installing AdoptOpenJDK ${version} (${impl}, ${release})"
+    echo "       - unpacking"
     tar xzmf "$jdk_downloaded_file" -C "$jdk_dir" --strip-components=1
-    echo "       - done"
   else
-    echo "-----> Installing AdoptOpenJDK ${version} (${impl}, ${release})"
+    echo "       - downloading and unpacking"
     curl --retry 3 -sL "$url" | tar xzm -C "$jdk_dir" --strip-components=1
-    echo "       - done"
   fi
+
+  echo "       - pruning"
+    rm -rf "${jdk_dir}/demo"
+    rm -rf "${jdk_dir}/src.zip"
+    rm -rf "${jdk_dir}/sample"
+    rm -rf "${jdk_dir}/man"
+    rm -rf "${jdk_dir}/sample"
+  echo "       - done"
 }
 
 create_profile_scripts() {
