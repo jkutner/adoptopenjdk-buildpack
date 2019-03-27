@@ -19,9 +19,9 @@ get_property() {
 
   if [ -f ${propFile} ]; then
     local propValue=$(sed '/^\#/d' ${propFile} | grep "${propName}"  | tail -n 1 | cut -d "=" -f2- | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
-    echo "a ${propValue:-$propDefault}"
+    echo "${propValue:-$propDefault}"
   else
-    echo "b ${propDefault}"
+    echo "${propDefault}"
   fi
 }
 
@@ -52,10 +52,9 @@ install_adoptopenjdk() {
     curl --retry 3 -o "$jdk_downloaded_file" -sL "$url"
     echo "       - done"
 
-    echo -n "-----> Verifying checksum ($checksum)"
+    echo "-----> Verifying checksum ($checksum)"
     actual_sha_256="$(shasum -a 256 ${jdk_downloaded_file} | awk '{ print $1 }')"
     if [ "$actual_sha_256" != "$checksum" ]; then
-      echo "failed"
       echo "Invalid checksum!"
       echo "Expected => $checksum"
       echo "Found    => $actual_sha_256"
