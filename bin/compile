@@ -17,8 +17,6 @@ install_adoptopenjdk() {
   echo "       - done"
 
   echo -n "-----> Verifying checksum... "
-  local jdk_checksum="$(curl --retry 3 -sfL "${jdk_checksum_url}")"
-
   actual_sha_256="$(shasum -a 256 ${jdk_downloaded_file} | awk '{ print $1 }')"
   if [ "$actual_sha_256" != "$checksum" ]; then
     echo "failed"
